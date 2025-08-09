@@ -1,0 +1,218 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #f5f6fa;
+    margin: 0;
+    color: #222;
+}
+
+header {
+    background: #2d98da;
+    color: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+header button {
+    background: #fff;
+    color: #2d98da;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background 0.2s;
+}
+
+header button:hover {
+    background: #d1d8e0;
+}
+
+.filters {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+
+.filters select {
+    padding: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #d1d8e0;
+    font-size: 1rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    transition: box-shadow 0.2s, transform 0.2s;
+    border-left: 5px solid #2d98da;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(44, 62, 80, 0.15);
+    transform: translateY(-5px);
+}
+
+.card-title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #34495e;
+}
+
+.card-desc {
+    color: #7f8c8d;
+    font-size: 0.95rem;
+}
+
+.card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.9rem;
+    color: #95a5a6;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.card-actions button, .card-actions select {
+    background: #f1f2f6;
+    border: none;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: background 0.2s;
+}
+
+.card-actions button:hover {
+    background: #d1d8e0;
+}
+
+.material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-size: 1.2em;
+    vertical-align: middle;
+}
+
+/* Nuevo Estilo para el panel lateral de formulario */
+.sidebar-form {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 400px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -4px 0 16px rgba(0,0,0,0.1);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 100;
+}
+
+.sidebar-form.open {
+    transform: translateX(0);
+}
+
+.sidebar-form form {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.sidebar-form .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #d1d8e0;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+}
+
+.sidebar-form .form-header h2 {
+    margin: 0;
+}
+
+.sidebar-form .form-header button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #7f8c8d;
+    font-size: 1.5rem;
+}
+
+.sidebar-form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.sidebar-form input, .sidebar-form textarea, .sidebar-form select {
+    padding: 0.7rem;
+    border-radius: 8px;
+    border: 1px solid #d1d8e0;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.sidebar-form .form-actions {
+    margin-top: 1rem;
+}
+
+.sidebar-form .form-actions button {
+    width: 100%;
+    background: #2d98da;
+    color: #fff;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.sidebar-form .form-actions button:hover {
+    background: #206d9a;
+}
