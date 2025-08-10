@@ -1,139 +1,77 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from psycopg2.extras import RealDictCursor
 from models import get_db_connection, init_db
 
 app = Flask(__name__)
 CORS(app)
 
-# Inicializamos la base de datos al arrancar la app
+# Llamar a la función de inicialización de la base de datos directamente
+# Esto reemplaza el obsoleto @app.before_first_request
 init_db()
 
-@app.get("/")
-def root():
-    return jsonify({"ok": True, "service": "retos-api"})
-
-@app.get("/health")
-def health():
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute("SELECT 1;")
-        cur.close()
-        conn.close()
-        return jsonify({"status": "healthy"}), 200
-    except Exception as e:
-        return jsonify({"status": "error", "detail": str(e)}), 500
-
-@app.get('/retos')
+@app.route('/retos', methods=['GET'])
 def get_retos():
-    params = []
-    where = []
     categoria = request.args.get('categoria')
     dificultad = request.args.get('dificultad')
-    estado = request.args.get('estado')
-    buscar = request.args.get('q')
-
+    conn = get_db_connection()
+    cur = conn.cursor()
+    query = "SELECT * FROM retos"
+    params = []
+    filters = []
     if categoria:
-        where.append("categoria = %s")
+        filters.append("categoria = %s")
         params.append(categoria)
     if dificultad:
-        where.append("dificultad = %s")
+        filters.append("dificultad = %s")
         params.append(dificultad)
-    if estado:
-        where.append("estado = %s")
-        params.append(estado)
-    if buscar:
-        where.append("(LOWER(titulo) LIKE LOWER(%s) OR LOWER(descripcion) LIKE LOWER(%s))")
-        like = f"%{buscar}%"
-        params.extend([like, like])
-
-    sql = """SELECT id, titulo, descripcion, categoria, dificultad, estado, creado_en, actualizado_en
-             FROM retos"""
-    if where:
-        sql += " WHERE " + " AND ".join(where)
-    sql += " ORDER BY id DESC"
-
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute(sql, params)
-    rows = cur.fetchall()
+    if filters:
+        query += " WHERE " + " AND ".join(filters)
+    cur.execute(query, params)
+    retos = [
+        dict(id=row[0], titulo=row[1], descripcion=row[2], categoria=row[3], dificultad=row[4], estado=row[5])
+        for row in cur.fetchall()
+    ]
     cur.close()
     conn.close()
-    return jsonify(rows), 200
+    return jsonify(retos)
 
-@app.post('/retos')
+@app.route('/retos', methods=['POST'])
 def create_reto():
-    data = request.get_json(force=True) or {}
-    titulo = data.get('titulo')
-    if not titulo:
-        return jsonify({'error': 'titulo es requerido'}), 400
-
-    descripcion = data.get('descripcion')
-    categoria = data.get('categoria')
-    dificultad = data.get('dificultad')
-    estado = data.get('estado') or 'pendiente'
-
+    data = request.json
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor()
     cur.execute("""
         INSERT INTO retos (titulo, descripcion, categoria, dificultad, estado)
-        VALUES (%s, %s, %s, %s, %s)
-        RETURNING id, titulo, descripcion, categoria, dificultad, estado, creado_en, actualizado_en
-    """, (titulo, descripcion, categoria, dificultad, estado))
-    row = cur.fetchone()
+        VALUES (%s, %s, %s, %s, %s) RETURNING id
+    """, (data['titulo'], data['descripcion'], data['categoria'], data['dificultad'], data['estado']))
+    reto_id = cur.fetchone()[0]
     conn.commit()
     cur.close()
     conn.close()
-    return jsonify(row), 201
+    return jsonify({'id': reto_id}), 201
 
-@app.put('/retos/<int:reto_id>')
+@app.route('/retos/<int:reto_id>', methods=['PUT'])
 def update_reto(reto_id):
-    data = request.get_json(force=True) or {}
-    allowed = ['titulo', 'descripcion', 'categoria', 'dificultad', 'estado']
-    sets = []
-    params = []
-
-    for k in allowed:
-        if k in data and data[k] is not None:
-            sets.append(f"{k} = %s")
-            params.append(data[k])
-
-    if not sets:
-        return jsonify({'error': 'Nada para actualizar'}), 400
-
-    sets.append("actualizado_en = NOW()")
-    params.append(reto_id)
-
-    sql = f"""UPDATE retos SET {', '.join(sets)}
-              WHERE id = %s
-              RETURNING id, titulo, descripcion, categoria, dificultad, estado, creado_en, actualizado_en"""
+    data = request.json
     conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute(sql, params)
-    row = cur.fetchone()
+    cur = conn.cursor()
+    cur.execute("""
+        UPDATE retos SET estado = %s WHERE id = %s
+    """, (data['estado'], reto_id))
     conn.commit()
     cur.close()
     conn.close()
+    return jsonify({'message': 'Reto actualizado'})
 
-    if not row:
-        return jsonify({'error': 'Reto no encontrado'}), 404
-    return jsonify(row), 200
-
-@app.delete('/retos/<int:reto_id>')
+@app.route('/retos/<int:reto_id>', methods=['DELETE'])
 def delete_reto(reto_id):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("DELETE FROM retos WHERE id = %s", (reto_id,))
-    deleted = cur.rowcount
     conn.commit()
     cur.close()
     conn.close()
-
-    if deleted == 0:
-        return jsonify({'error': 'Reto no encontrado'}), 404
-    return jsonify({'message': 'Reto eliminado'}), 200
+    return jsonify({'message': 'Reto eliminado'})
 
 if __name__ == '__main__':
-    print("URL MAP:", app.url_map)
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(debug=True)
